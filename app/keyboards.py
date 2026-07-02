@@ -2,28 +2,54 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def start_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📱 Оценить iPhone", callback_data="start")]
+        [InlineKeyboardButton(text="📱 Начать оценку", callback_data="start")]
     ])
 
-def models_kb():
+
+def model_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="iPhone 15 Pro Max", callback_data="m_15pm")],
         [InlineKeyboardButton(text="iPhone 15 Pro", callback_data="m_15p")],
         [InlineKeyboardButton(text="iPhone 14 Pro Max", callback_data="m_14pm")],
-        [InlineKeyboardButton(text="iPhone 14 Pro", callback_data="m_14p")],
     ])
 
-def yes_no(prefix):
+
+def target_kb():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="iPhone 15 Pro Max", callback_data="t_15pm")],
+        [InlineKeyboardButton(text="iPhone 15 Pro", callback_data="t_15p")],
+    ])
+
+
+def condition_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="❌ Есть проблема", callback_data=f"{prefix}_yes"),
-            InlineKeyboardButton(text="✅ Всё ок", callback_data=f"{prefix}_no"),
+            InlineKeyboardButton(text="1", callback_data="c_1"),
+            InlineKeyboardButton(text="2", callback_data="c_2"),
+            InlineKeyboardButton(text="3", callback_data="c_3"),
+            InlineKeyboardButton(text="4", callback_data="c_4"),
+            InlineKeyboardButton(text="5", callback_data="c_5"),
         ]
     ])
+
+
+def battery_kb():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="100%", callback_data="b_100"),
+            InlineKeyboardButton(text="95%", callback_data="b_95"),
+            InlineKeyboardButton(text="90%", callback_data="b_90"),
+        ],
+        [
+            InlineKeyboardButton(text="85%", callback_data="b_85"),
+            InlineKeyboardButton(text="80%", callback_data="b_80"),
+            InlineKeyboardButton(text="<80%", callback_data="b_low"),
+        ]
+    ])
+
 
 def result_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🚀 Зафиксировать цену", callback_data="take")],
-        [InlineKeyboardButton(text="💬 Хочу выше цену", callback_data="manager")],
-        [InlineKeyboardButton(text="📞 Связаться", callback_data="contact")]
+        [InlineKeyboardButton(text="💬 Менеджер", callback_data="manager")]
     ])

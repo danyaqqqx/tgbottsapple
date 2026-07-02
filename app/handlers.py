@@ -4,104 +4,85 @@ from aiogram.fsm.context import FSMContext
 
 from app.states import Flow
 from app.keyboards import *
-from app.pricing import calc
-from app.db import save_lead
-from app.scheduler import send_delayed
 
 router = Router()
-
-MODELS = {
-    "m_15pm": 110000,
-    "m_15p": 95000,
-    "m_14pm": 80000,
-    "m_14p": 70000
-}
 
 
 @router.message(F.text == "/start")
 async def start(m: Message):
-    await m.answer("Нажми кнопку:", reply_markup=start_kb())
+    await m.answer(
+        "Привет 👋\n"
+        "Оценю твой iPhone и рассчитаю обмен за 1 минуту.",
+        reply_markup=start_kb()
+    )
 
 
+# START FLOW
 @router.callback_query(F.data == "start")
-async def model(c: CallbackQuery, state: FSMContext):
-    await c.message.edit_text("Выбери модель:", reply_markup=models_kb())
-    await state.set_state(Flow.model)
+async def step1(c: CallbackQuery, state: FSMContext):
+    await c.message.edit_text("📱 Выберите вашу модель:", reply_markup=model_kb())
+    await state.set_state(Flow.model_from)
 
 
+# MODEL FROM
 @router.callback_query(F.data.startswith("m_"))
-async def model_set(c: CallbackQuery, state: FSMContext):
-    await state.update_data(model=c.data)
+async def step2(c: CallbackQuery, state: FSMContext):
+    await state.update_data(model_from=c.data)
 
-    await c.message.edit_text("Есть проблемы с экраном?", reply_markup=yes_no("screen"))
-    await state.set_state(Flow.screen)
+    await c.message.edit_text("🔁 На какую модель хотите обмен?", reply_markup=target_kb())
+    await state.set_state(Flow.model_to)
 
 
-@router.callback_query(F.data.startswith("screen_"))
-async def screen(c: CallbackQuery, state: FSMContext):
-    await state.update_data(screen=c.data.split("_")[1])
+# MODEL TO
+@router.callback_query(F.data.startswith("t_"))
+async def step3(c: CallbackQuery, state: FSMContext):
+    await state.update_data(model_to=c.data)
 
-    await c.message.edit_text("Батарея норм?", reply_markup=yes_no("battery"))
+    await c.message.edit_text("📊 Оцените состояние iPhone (1–5):", reply_markup=condition_kb())
+    await state.set_state(Flow.condition)
+
+
+# CONDITION 1-5
+@router.callback_query(F.data.startswith("c_"))
+async def step4(c: CallbackQuery, state: FSMContext):
+    await state.update_data(condition=int(c.data.split("_")[1]))
+
+    await c.message.edit_text("🔋 Какой процент батареи?", reply_markup=battery_kb())
     await state.set_state(Flow.battery)
 
 
-@router.callback_query(F.data.startswith("battery_"))
-async def battery(c: CallbackQuery, state: FSMContext):
-    await state.update_data(battery=c.data.split("_")[1])
-
-    await c.message.edit_text("Камера ок?", reply_markup=yes_no("camera"))
-    await state.set_state(Flow.camera)
-
-
-@router.callback_query(F.data.startswith("camera_"))
-async def camera(c: CallbackQuery, state: FSMContext):
-    await state.update_data(camera=c.data.split("_")[1])
-
-    await c.message.edit_text("Face ID работает?", reply_markup=yes_no("faceid"))
-    await state.set_state(Flow.faceid)
-
-
-@router.callback_query(F.data.startswith("faceid_"))
-async def faceid(c: CallbackQuery, state: FSMContext):
-    await state.update_data(faceid=c.data.split("_")[1])
-
-    await c.message.edit_text("Корпус в порядке?", reply_markup=yes_no("body"))
-    await state.set_state(Flow.body)
-
-
-@router.callback_query(F.data.startswith("body_"))
-async def body(c: CallbackQuery, state: FSMContext):
+# BATTERY (ФИНАЛ — БЕЗ ЗАВИСАНИЯ)
+@router.callback_query(F.data.startswith("b_"))
+async def step5(c: CallbackQuery, state: FSMContext):
     data = await state.get_data()
 
-    model = data["model"]
-    price = calc(MODELS[model], data)
+    condition = data["condition"]
+    battery = c.data.split("_")[1]
+
+    # фиксация батареи
+    if battery == "low":
+        battery_val = 75
+    else:
+        battery_val = int(battery)
+
+    # простая формула (можем потом усложнить)
+    base = 100000
+
+    price = base * (condition / 5)
+
+    if battery_val < 85:
+        price *= 0.85
+
+    price = int(price)
 
     doplata = 129990 - price + 15000
 
-    text = (
+    await c.message.edit_text(
         f"💰 Trade-in: ~{price} ₽\n"
         f"📱 Новый iPhone: 129 990 ₽\n"
         f"➕ Доплата: {doplata} ₽\n\n"
-        f"⚡ Цена действует 2 часа"
+        f"⚡ Цена активна 2 часа",
+        reply_markup=result_kb()
     )
 
-    await c.message.edit_text(text, reply_markup=result_kb())
-
-    user_id = c.from_user.id
-
-    # 🚀 дожимы
-    send_delayed(user_id, "⚡ Могу зафиксировать цену прямо сейчас", 600)       # 10 мин
-    send_delayed(user_id, "📉 Цена может измениться сегодня", 3600)             # 1 час
-    send_delayed(user_id, "🔥 Осталось мало мест на приём", 86400)              # 24 часа
-
-    await state.clear()
-
-
-@router.callback_query(F.data == "take")
-async def take(c: CallbackQuery):
-    await c.message.answer("Отлично! Оставь номер телефона 📞")
-
-
-@router.callback_query(F.data == "contact")
-async def contact(c: CallbackQuery):
-    await c.message.answer("Напиши номер или @username")
+    await state.clear()   # 🔥 ВОТ ЭТО УБИРАЕТ ЗАВИСАНИЯ

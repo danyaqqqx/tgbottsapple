@@ -1,23 +1,24 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
+# 🚀 START
 def start_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📱 Начать оценку", callback_data="start")]
     ])
 
 
-# 📦 1 ЭТАП — КАТЕГОРИИ (УБИРАЕМ МУСОР)
-def model_category_kb():
+# 📱 СДАВАЕМЫЙ IPHONE — КАТЕГОРИИ
+def model_from_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📱 iPhone 11–12", callback_data="cat|11_12")],
-        [InlineKeyboardButton(text="📱 iPhone 13–14", callback_data="cat|13_14")],
-        [InlineKeyboardButton(text="📱 iPhone 15–17", callback_data="cat|15_17")],
+        [InlineKeyboardButton(text="iPhone 11–12", callback_data="catf|11_12")],
+        [InlineKeyboardButton(text="iPhone 13–14", callback_data="catf|13_14")],
+        [InlineKeyboardButton(text="iPhone 15–17", callback_data="catf|15_17")],
     ])
 
 
-# 📱 2 ЭТАП — МОДЕЛИ ПО КАТЕГОРИИ
-def model_kb(cat: str):
+# 📱 СДАВАЕМЫЙ IPHONE — СПИСОК
+def model_from_list(cat: str):
     data = {
         "11_12": [
             "iPhone 11", "iPhone 11 Pro", "iPhone 11 Pro Max",
@@ -28,9 +29,9 @@ def model_kb(cat: str):
             "iPhone 14", "iPhone 14 Plus", "iPhone 14 Pro", "iPhone 14 Pro Max",
         ],
         "15_17": [
-            "iPhone 15", "iPhone 15 Plus", "iPhone 15 Pro", "iPhone 15 Pro Max",
-            "iPhone 16", "iPhone 16 Plus", "iPhone 16 Pro", "iPhone 16 Pro Max",
-            "iPhone 17", "iPhone 17 Air", "iPhone 17 Pro", "iPhone 17 Pro Max",
+            "iPhone 15", "iPhone 15 Pro", "iPhone 15 Pro Max",
+            "iPhone 16", "iPhone 16 Pro", "iPhone 16 Pro Max",
+            "iPhone 17", "iPhone 17 Pro", "iPhone 17 Pro Max",
         ],
     }
 
@@ -40,7 +41,34 @@ def model_kb(cat: str):
     ])
 
 
-# 📊 состояние
+# 🔁 ОБМЕН — КАТЕГОРИИ
+def exchange_cat_kb():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="iPhone 14–15", callback_data="ecat|14_15")],
+        [InlineKeyboardButton(text="iPhone 16–17", callback_data="ecat|16_17")],
+    ])
+
+
+# 🔁 ОБМЕН — СПИСОК
+def exchange_list(cat: str):
+    data = {
+        "14_15": [
+            "iPhone 14", "iPhone 14 Pro", "iPhone 14 Pro Max",
+            "iPhone 15", "iPhone 15 Pro", "iPhone 15 Pro Max",
+        ],
+        "16_17": [
+            "iPhone 16", "iPhone 16 Pro", "iPhone 16 Pro Max",
+            "iPhone 17", "iPhone 17 Pro", "iPhone 17 Pro Max",
+        ],
+    }
+
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=m, callback_data=f"t|{m}")]
+        for m in data.get(cat, [])
+    ])
+
+
+# 📊 СОСТОЯНИЕ
 def condition_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -53,7 +81,7 @@ def condition_kb():
     ])
 
 
-# 🔋 батарея
+# 🔋 БАТАРЕЯ
 def battery_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -69,6 +97,7 @@ def battery_kb():
     ])
 
 
+# 💰 РЕЗУЛЬТАТ
 def result_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🚀 Зафиксировать цену", callback_data="take")],

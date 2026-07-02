@@ -1,39 +1,18 @@
-import json
-
-def load_prices():
-    with open("data/prices.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def calculate_trade_in(model: str, condition: dict):
-    prices = load_prices()
-    base = prices.get(model, 50000)
-
+def calc(model_price, c):
     discount = 0
 
-    if condition.get("screen_crack"):
+    if c["screen"] == "yes":
         discount += 0.30
-
-    if condition.get("face_id_broken"):
+    if c["battery"] == "yes":
+        discount += 0.10
+    if c["camera"] == "yes":
+        discount += 0.10
+    if c["faceid"] == "yes":
         discount += 0.15
-
-    if condition.get("camera_issue"):
+    if c["body"] == "yes":
         discount += 0.10
 
-    if condition.get("body_damage"):
-        discount += 0.10
+    min_price = int(model_price * 0.35)
+    price = int(model_price * (1 - discount))
 
-    if condition.get("battery_low"):
-        discount += 0.07
-
-    final_price = int(base * (1 - discount))
-    final_price = max(final_price, int(base * 0.3))  # floor
-
-    return final_price
-
-
-def calculate_upgrade(trade_in_price, new_phone_price=129990):
-    doplata = new_phone_price - trade_in_price + 15000
-    monthly = doplata // 12
-
-    return doplata, monthly
+    return max(price, min_price)

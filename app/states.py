@@ -1,11 +1,11 @@
 from aiogram.fsm.state import State, StatesGroup
 
-class Form(StatesGroup):
+class Flow(StatesGroup):
     model = State()
-    screen_crack = State()
-    face_id = State()
-    camera = State()
-    body = State()
+    screen = State()
     battery = State()
+    camera = State()
+    faceid = State()
+    body = State()
     name = State()
     phone = State()
